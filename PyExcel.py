@@ -6,13 +6,11 @@ def convertir_csv_a_excel():
     archivo_csv = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv")])
     
     if not archivo_csv:
-        return  # Si el usuario no selecciona un archivo, salir
+        return  
 
     try:
-        # Cargar CSV con Polars
         df = pl.read_csv(archivo_csv)
 
-        # Guardar como Excel
         archivo_excel = archivo_csv.replace(".csv", ".xlsx")
         df.write_excel(archivo_excel)
 
