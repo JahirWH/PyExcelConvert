@@ -19,7 +19,8 @@ def seleccionar():
             ("Archivos CSV", "*.csv"),
             ("Archivos de Excel", "*.xls;*.xlsx"),
             ("Archivos JSON", "*.json"),
-            ("Archivos PDF", "*.pdf")
+            ("Archivos PDF", "*.pdf"),
+            ("Todos", "*")
         ]
     )
     if archivo:

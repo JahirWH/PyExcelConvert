@@ -22,7 +22,7 @@ PyExcel Converter es una herramienta gráfica para convertir archivos (CSV, Exce
    -pdfplumber: Extracción de tablas desde PDFs.
    -Tkinter: Interfaz gráfica.
 
-![App Screenshot](./img/cap.png)
+![App Screenshot](./img/cap2.png)
 
 
 ## 📦 Instalacion
