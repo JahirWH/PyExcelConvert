@@ -1,3 +1,12 @@
-pip install tk
-pip install XlsxWriter
-pip install pyarrow
+# Dependencias principales
+polars  # Para manejo eficiente de datos
+pandas   # Para conversiones adicionales
+fpdf2    # Para generar PDFs
+pdfplumber  # Para extraer datos de PDFs
+openpyxl  # Para manejo avanzado de Excel
+tk
+# Para procesamiento de imágenes (requerido por pdfplumber)
+pdfminer.six>=20221105
+
+#Problemas con windows al instalar utiliza
+#pip install pdfminer.six --pre
