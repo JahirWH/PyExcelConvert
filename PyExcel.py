@@ -1,16 +1,23 @@
 import polars as pl
 import tkinter as tk
-from tkinter import filedialog, messagebox
-import os 
-import subprocess
+from tkinter import filedialog, messagebox, ttk
+import os
 import platform
+import subprocess
 from fpdf import FPDF
 import pandas as pd
+import unicodedata
 import pdfplumber
+import logging
+from datetime import datetime
 
 # Variable global para almacenar el último archivo seleccionado
 ultimo_archivo = None
 df_actual = None
+
+
+
+
 
 def seleccionar():
     global ultimo_archivo, df_actual
@@ -20,9 +27,10 @@ def seleccionar():
             ("Archivos de Excel", "*.xls;*.xlsx"),
             ("Archivos JSON", "*.json"),
             ("Archivos PDF", "*.pdf"),
-            ("Todos", "*")
+            ("Todos ", "*.*")
         ]
     )
+
     if archivo:
         ultimo_archivo = archivo
         actualizar_texto("Cargando archivo...")
@@ -47,10 +55,23 @@ def seleccionar():
     else:
         messagebox.showwarning("Advertencia", "No se seleccionó ningún archivo.")
 
+
+# Añadir al inicio de las funciones de conversión
+
+
 def convertir_a_excel():
     if df_actual is None:
         messagebox.showwarning("Advertencia", "Primero selecciona un archivo")
         return
+    
+    if df_actual.is_empty():
+        messagebox.showwarning("Advertencia", "El DataFrame está vacío")
+        return
+
+    if len(df_actual) > 10000:
+        if not messagebox.askyesno("Confirmación", "El archivo es muy grande (>10k filas). ¿Continuar?"):
+            return
+    
     
     try:
         carpeta_resultados = os.path.join(os.getcwd(), "archivos_convertidos")
@@ -64,7 +85,6 @@ def convertir_a_excel():
         
     except Exception as e:
         messagebox.showerror("Error", f"Fallo al convertir a Excel:\n{str(e)}")
-        actualizar_texto("Error en conversión", "#F44336")
 
 def convertir_a_pdf():
     if df_actual is None:
@@ -78,59 +98,53 @@ def convertir_a_pdf():
         nombre_base = os.path.splitext(os.path.basename(ultimo_archivo))[0]
         archivo_pdf = os.path.join(carpeta_resultados, f"{nombre_base}.pdf")
         
-        # Convertir a PDF
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=10)
+        
+        # Agregar fuente Unicode
+        pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
+        pdf.set_font("DejaVu", size=7)
+
         
         # Encabezado
-        pdf.cell(200, 10, txt=f"Reporte: {nombre_base}", ln=1, align='C')
+        pdf.set_fill_color(79, 129, 189)
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(200, 10, txt=f"Reporte: {nombre_base}", ln=1, align='C', fill=True)
         pdf.ln(5)
         
-        # Convertir a pandas para facilidad
-        df_pandas = df_actual.to_pandas()
+        # Configurar tabla
+        # Calcular el ancho máximo entre encabezados y contenido
+        col_widths = []
+        for col in df_actual.columns:
+            max_width = pdf.get_string_width(str(col))
+            for val in df_actual[col].to_list():
+                val_width = pdf.get_string_width(str(val))
+                if val_width > max_width:
+                    max_width = val_width
+            col_widths.append(max(max_width + 6, 20))  # 20 es el mínimo ancho por columna
+
         
-        # Crear tabla
-        with pdf.table() as table:
-            # Encabezados
-            headers = table.row()
-            for col in df_pandas.columns:
-                headers.cell(str(col))
-            
-            # Datos
-            for row in df_pandas.itertuples(index=False):
-                row_cells = table.row()
-                for item in row:
-                    row_cells.cell(str(item))
+        # Encabezados
+        pdf.set_fill_color(79, 129, 189)
+        pdf.set_text_color(255, 255, 255)
+        for col, width in zip(df_actual.columns, col_widths):
+            pdf.cell(width, 10, str(col), border=1, fill=True)
+        pdf.ln()
         
+        # Datos
+        pdf.set_fill_color(255, 255, 255)
+        pdf.set_text_color(0, 0, 0)
+        for row in df_actual.iter_rows():
+            for value, width in zip(row, col_widths):
+                pdf.cell(width, 10, str(value), border=1)
+            pdf.ln()
+
         pdf.output(archivo_pdf)
         actualizar_texto(f"✓ Convertido a PDF\n{os.path.basename(archivo_pdf)}", "#4CAF50")
         
     except Exception as e:
         messagebox.showerror("Error", f"Fallo al convertir a PDF:\n{str(e)}")
         actualizar_texto("Error en conversión", "#F44336")
-
-
-def pdf_a_excel(pdf_path):
-    try:
-        # Crear carpeta si no existe
-        os.makedirs("pdf_convertidos", exist_ok=True)
-        
-        excel_path = os.path.join("pdf_convertidos", f"{os.path.splitext(os.path.basename(pdf_path))[0]}.xlsx")
-        
-        with pdfplumber.open(pdf_path) as pdf:
-            with pd.ExcelWriter(excel_path) as writer:
-                for i, page in enumerate(pdf.pages):
-                    # Extraer todas las tablas de la página
-                    tables = page.extract_tables()
-                    
-                    for j, table in enumerate(tables):
-                        df = pd.DataFrame(table[1:], columns=table[0])
-                        df.to_excel(writer, sheet_name=f"Pag_{i+1}_Tabla_{j+1}", index=False)
-        
-        return excel_path
-    except Exception as e:
-        raise Exception(f"Error en conversión: {str(e)}")
 
 
 #actualiza el titulo del label
@@ -155,7 +169,7 @@ def abrir_carpeta():
 
 def main():
     global etiqueta
-    
+   
     ventana = tk.Tk()
     ventana.title("Conversor de Archivos")
     ventana.geometry("700x450")

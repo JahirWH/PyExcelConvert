@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-PyExcel Converter es una herramienta gráfica para convertir archivos (CSV, Excel, JSON, PDF) a xls,xlsx generación de informes.
+PyExcel Converter es una herramienta gráfica para convertir archivos (CSV, Excel, JSON, PDF) a xls,xlsx  y a PDF para generación de tablas.
 
 
 
@@ -11,6 +11,7 @@ PyExcel Converter es una herramienta gráfica para convertir archivos (CSV, Exce
   - CSV ↔ Excel
   - Exel ↔ PDF
   - JSON ↔ Excel
+  - CVS - PDF
   - PDF → Excel (Solo PDF con tablas claras)
 
 ![App Screenshot](./img/cap.png)
@@ -26,17 +27,16 @@ PyExcel Converter es una herramienta gráfica para convertir archivos (CSV, Exce
 
 
 ## 📦 Instalacion
-git clone https://github.com/JahirWH/PyExcelConvert.git
+- git clone https://github.com/JahirWH/PyExcelConvert.git
 
-cd PyExcel-Converter
+- cd PyExcel-Converter
 
 ## Intala las dependencias con:
 
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 
 ## Usar 
-Linux- /bin/python3 ./PyExcel.py
-
-windows - acede a la carpeta y solo ejecuta PyExcel.py
+ - Linux- /bin/python3 ./PyExcel.py
+ - windows - acede a la carpeta y solo ejecuta PyExcel.py
 
